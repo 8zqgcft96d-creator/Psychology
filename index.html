@@ -2,83 +2,49 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>心理測驗</title>
+<title>心理測驗 - 性格雷達圖</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px;}
-.card { background: #fff; padding: 20px; margin: 20px auto; width: 400px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);}
-button { margin-top: 10px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;}
-.option { display: block; margin: 8px 0; padding: 8px; background: #e0e0e0; border-radius: 5px; cursor: pointer;}
-.option:hover { background: #d0d0d0;}
-#result { display: none; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);}
-#downloadBtn { margin-top: 15px; }
+body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+.card { background: #fff; padding: 20px; margin: 20px auto; width: 500px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+button { margin-top: 10px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+.option { display: block; margin: 8px 0; padding: 8px; background: #e0e0e0; border-radius: 5px; cursor: pointer; }
+.option:hover { background: #d0d0d0; }
+#result { display: none; }
 </style>
 </head>
 <body>
 
 <div id="quiz" class="card"></div>
-<div id="result" class="card"></div>
+<div id="result" class="card">
+    <h3 id="dominantAnimal"></h3>
+    <p id="dominantDesc"></p>
+    <canvas id="radarChart"></canvas>
+</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-// 題目設定與選項文字
+// 題目與選項文字
 const questions = [
-{
-  q: "1. 當你遇到一個新的挑戰/任務時,你的第一反應是:",
-  options: [
-    "A. 馬上跳進去、先試看看",
-    "B. 先觀察環境、研究方式",
-    "C. 有點猶豫、怕搞砸、先做部分準備",
-    "D. 想幫助他人、在背後支撐或配合"
-  ]
-},
-{
-  q: "2. 在人際互動中,當朋友需要幫忙/情緒低落時,你通常會:",
-  options: [
-    "A. 鼓勵他們「快起來、一起去做點什麼」",
-    "B. 安靜陪伴、傾聽他們說出來",
-    "C. 有點退縮、不太確定怎麼幫比較好",
-    "D. 主動提供支持、做好後勤或照顧他們"
-  ]
-},
-{
-  q: "3. 當你在思考人生或尋找方向時,你偏好哪種方式:",
-  options: [
-    "A. 設定目標、立刻動手實踐",
-    "B. 深入思考、寫筆記、分析可能性",
-    "C. 小心翼翼、怕錯、慢慢走",
-    "D. 和他人分享、互相支持、一步一腳印"
-  ]
-},
-{
-  q: "4. 面對失敗或挫折,你最可能的反應是:",
-  options: [
-    "A. 立刻反彈、再戰一次",
-    "B. 自我反省、思考教訓",
-    "C. 感到沮喪、有點退縮、怕再犯錯",
-    "D. 尋求或提供人際支持、共同面對"
-  ]
-},
-{
-  q: "5. 如果要選擇你最看重的特質,是哪一項:",
-  options: [
-    "A. 冒險精神/行動力",
-    "B. 思考深度/内在探索",
-    "C. 謹慎/安全感",
-    "D. 溫暖/支持他"
-  ]
-}];
+{q:"1. 當你遇到一個新的挑戰/任務時,你的第一反應是:", options:["A. 馬上跳進去","B. 先觀察環境","C. 有點猶豫、先做部分準備","D. 想幫助他人"]},
+{q:"2. 當朋友需要幫忙或情緒低落時,你通常會:", options:["A. 鼓勵他們一起行動","B. 安靜陪伴、傾聽","C. 有點退縮","D. 主動提供支持"]},
+{q:"3. 思考人生或尋找方向時偏好:", options:["A. 立刻行動","B. 深入思考分析","C. 小心慢慢走","D. 與他人分享"]},
+{q:"4. 面對失敗或挫折:", options:["A. 立即反彈","B. 自我反省","C. 退縮","D. 尋求或提供人際支持"]},
+{q:"5. 最看重的特質:", options:["A. 冒險/行動力","B. 思考深度","C. 謹慎/安全感","D. 溫暖/支持他"]}
+];
 
-// 選項對應分析
-const analysis = {
-"A":"你偏向冒險、行動力強，喜歡立即行動解決問題。",
-"B":"你偏向內在思考、觀察細膩，善於分析與傾聽。",
-"C":"你偏向謹慎、追求安全感，行動前會仔細評估。",
-"D":"你偏向溫暖、支持他人，重視人際關係與合作。"
+// 選項對應性格
+const personalityMap = {A:"獅子", B:"貓頭鷹", C:"海龜", D:"大象"};
+const personalityAnalysis = {
+"獅子":"你勇敢果斷，喜歡挑戰與冒險，擁有強烈的行動力與領導力。",
+"貓頭鷹":"你思維細膩、智慧冷靜，喜歡分析與觀察，善於策略規劃。",
+"海龜":"你謹慎踏實、追求安全感，做事小心仔細，遇事會仔細評估。",
+"大象":"你溫暖善良，重視人際關係與團隊合作，樂於支持他人。",
+"狐狸":"你靈活適應，能快速應對各種環境與挑戰，善於調整策略。"
 };
 
-let answers = [];
-let current = 0;
+let answers = [], current = 0;
 
+// 顯示題目
 function showQuestion(index){
     const quizDiv = document.getElementById("quiz");
     quizDiv.innerHTML = `<h3>${questions[index].q}</h3>`;
@@ -86,44 +52,62 @@ function showQuestion(index){
         const btn = document.createElement("button");
         btn.className = "option";
         btn.textContent = opt;
-        btn.onclick = ()=>{ answers.push(opt[0]); nextQuestion(); }; // 用第一個字母 A/B/C/D
+        btn.onclick = ()=>{
+            answers.push(opt[0]); // 取首字母 A/B/C/D
+            nextQuestion();
+        };
         quizDiv.appendChild(btn);
     });
 }
 
 function nextQuestion(){
     current++;
-    if(current < questions.length){
-        showQuestion(current);
-    } else {
-        showResult();
-    }
+    if(current<questions.length) showQuestion(current);
+    else showResult();
 }
 
+// 顯示結果與雷達圖
 function showResult(){
     document.getElementById("quiz").style.display="none";
-    const resultDiv = document.getElementById("result");
-    resultDiv.style.display="block";
+    document.getElementById("result").style.display="block";
+
     const counts = {A:0,B:0,C:0,D:0};
     answers.forEach(a=>counts[a]++);
-    let dominant = Object.keys(counts).reduce((a,b)=>counts[a]>=counts[b]?a:b);
-    let resultText = `<h3>測驗結果</h3>`;
-    resultText += `<p>你的主要傾向是: ${dominant}</p>`;
-    resultText += `<p>${analysis[dominant]}</p>`;
-    resultText += `<button id="downloadBtn">下載結果圖片</button>`;
-    resultDiv.innerHTML = resultText;
+    
+    // 計算主導性格
+    let dominantLetter = Object.keys(counts).reduce((a,b)=>counts[a]>counts[b]?a:a);
+    let maxCount = counts[dominantLetter];
+    let numMax = Object.values(counts).filter(v=>v===maxCount).length;
+    let dominantAnimal = (maxCount===1 && numMax===5) || numMax>1 ? "狐狸" : personalityMap[dominantLetter];
 
-    document.getElementById("downloadBtn").onclick = function(){
-        html2canvas(resultDiv).then(canvas=>{
-            const link = document.createElement("a");
-            link.download = "心理測驗結果.png";
-            link.href = canvas.toDataURL();
-            link.click();
-        });
+    document.getElementById("dominantAnimal").textContent = "你的主導性格: " + dominantAnimal;
+    document.getElementById("dominantDesc").textContent = personalityAnalysis[dominantAnimal];
+
+    // 準備雷達圖數據
+    const data = {
+        labels: ["獅子","貓頭鷹","海龜","大象","狐狸"],
+        datasets: [{
+            label: '性格分數',
+            data: [
+                counts["A"]||0,
+                counts["B"]||0,
+                counts["C"]||0,
+                counts["D"]||0,
+                dominantAnimal==="狐狸"?1:0 // 狐狸平手時給 1 分
+            ],
+            backgroundColor: 'rgba(54,162,235,0.2)',
+            borderColor: 'rgba(54,162,235,1)',
+            borderWidth: 2
+        }]
     };
+
+    new Chart(document.getElementById("radarChart"), {
+        type: 'radar',
+        data: data,
+        options: { responsive:true, scales:{ r:{ beginAtZero:true, max:5 } } }
+    });
 }
 
-// 初始化
 showQuestion(current);
 </script>
 </body>
