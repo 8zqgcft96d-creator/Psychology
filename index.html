@@ -6,54 +6,25 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    font-family: Arial, sans-serif;
-    background: #f0f0f0;
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    font-family: Arial, sans-serif; background: #f0f0f0;
     overflow: hidden;
 }
 .card {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    width: 100vw;
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    padding: 20px;
-    box-sizing: border-box;
-    text-align: center;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    padding: 20px; box-sizing: border-box; text-align: center;
+    transition: all 0.3s ease;
 }
 h3 { margin-bottom: 20px; }
 button.option {
-    display: block;
-    width: 80%;
-    max-width: 300px;
-    margin: 10px auto;
-    padding: 15px;
-    background: #e0e0e0;
-    border: none;
-    border-radius: 10px;
-    font-size: 18px;
-    cursor: pointer;
-    transition: 0.2s;
+    display: block; margin: 10px auto; padding: 15px; width: 80%;
+    max-width: 300px; font-size: 18px; border-radius: 10px; border: none; cursor: pointer;
+    background: #e0e0e0; transition: 0.2s;
 }
-button.option:hover {
-    background: #d0d0d0;
-}
-#result canvas {
-    max-width: 80%;
-    max-height: 300px;
-    margin-top: 20px;
-}
-#analysisText {
-    margin-top: 20px;
-    font-size: 18px;
-}
+button.option:hover { background: #d0d0d0; }
+#result canvas { max-width: 80%; max-height: 300px; margin-top: 20px; }
+#analysisText { margin-top: 20px; font-size: 18px; }
 </style>
 </head>
 <body>
@@ -67,7 +38,7 @@ button.option:hover {
 </div>
 
 <script>
-// 題目設定
+// 題目與選項
 const questions = [
 {q:"1. 當你遇到新的挑戰時，你會:", options:["A. 馬上行動","B. 先觀察","C. 有點猶豫","D. 幫助他人"]},
 {q:"2. 當朋友需要幫忙或情緒低落時，你會:", options:["A. 鼓勵行動","B. 靜靜陪伴","C. 退縮","D. 主動支持"]},
@@ -96,7 +67,7 @@ function showQuestion(index){
         btn.className = "option";
         btn.textContent = opt;
         btn.onclick = ()=>{
-            answers.push(opt[0]);
+            answers.push(opt[0]); // 取首字母 A/B/C/D
             nextQuestion();
         };
         quizDiv.appendChild(btn);
@@ -150,7 +121,29 @@ function showResult(){
     });
 }
 
-showQuestion(current);
+// 判斷裝置調整卡片大小
+function adjustCardSize(){
+    const cards = document.querySelectorAll('.card');
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    cards.forEach(card=>{
+        if(isMobile){
+            card.style.width = '100vw';
+            card.style.height = '100vh';
+            card.style.borderRadius = '0';
+        } else {
+            card.style.width = '60vw';
+            card.style.height = '80vh';
+            card.style.borderRadius = '20px';
+        }
+    });
+}
+
+// 初始化
+window.addEventListener('load', ()=>{
+    adjustCardSize();
+    showQuestion(current);
+});
+window.addEventListener('resize', adjustCardSize);
 </script>
 </body>
 </html>
