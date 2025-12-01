@@ -1,0 +1,61 @@
+const personalityDescriptions = {
+  boy: { title: "男孩型", image: "boy.png", description: `...男孩型文字...` },
+  mole: { title: "鼴鼠型", image: "mole.png", description: `...鼴鼠型文字...` },
+  fox: { title: "狐狸型", image: "fox.png", description: `...狐狸型文字...` },
+  horse: { title: "馬型", image: "horse.png", description: `...馬型文字...` }
+};
+
+// 假設 answers = ['A','B','C','A','D'] 的統計結果
+const answerToType = { A: 'horse', B: 'fox', C: 'boy', D: 'mole' };
+
+function showResults(answers) {
+  // 統計分數
+  const scores = { horse:0, fox:0, boy:0, mole:0 };
+  answers.forEach(a => scores[answerToType[a]]++);
+
+  // 顯示多人格敘述
+  const container = document.getElementById("personality-cards");
+  container.innerHTML = "";
+  Object.keys(scores).forEach(type => {
+    if (scores[type] > 0) { // 有得分才顯示
+      const card = document.createElement("div");
+      card.className = "result-card";
+      card.innerHTML = `
+        <h2>${personalityDescriptions[type].title}</h2>
+        <p>${personalityDescriptions[type].description}</p>
+      `;
+      container.appendChild(card);
+    }
+  });
+
+  // 顯示雷達圖
+  const ctx = document.getElementById('radarChart');
+  new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['馬型','狐狸型','男孩型','鼴鼠型'],
+      datasets: [{
+        label: '你的心理特質分佈',
+        data: [scores.horse, scores.fox, scores.boy, scores.mole],
+        fill: true,
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        pointBackgroundColor: 'rgba(54, 162, 235, 1)'
+      }]
+    },
+    options: { responsive:true, scales: { r: { beginAtZero:true, max:5 } } }
+  });
+
+  // 顯示下載按鈕
+  document.getElementById("downloadBtn").style.display = "block";
+}
+
+// 下載結果區域
+function downloadResult() {
+  html2canvas(document.getElementById("result-section")).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "心理測驗結果.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+}
