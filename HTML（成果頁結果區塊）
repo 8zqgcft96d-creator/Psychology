@@ -1,0 +1,4 @@
+<div id="personality-section" class="result-card">
+    <h2>你的性格解析</h2>
+    <p id="personality-description"></p>
+</div>
