@@ -1,0 +1,15 @@
+<div id="result-section">
+  <!-- 可愛插畫 -->
+  <div id="image-container" style="text-align:center;margin-bottom:15px;">
+    <img id="personality-image" src="" style="width:180px;border-radius:15px;">
+  </div>
+
+  <!-- 人格敘述小卡 -->
+  <div id="personality-cards"></div>
+
+  <!-- 雷達圖 -->
+  <canvas id="radarChart" style="max-width:400px;margin:auto;display:block;"></canvas>
+
+  <!-- 下載按鈕 -->
+  <button id="downloadBtn" style="display:none;margin-top:20px;" onclick="downloadResult()">下載結果圖片</button>
+</div>
